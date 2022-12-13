@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import math
 import pdb
 
 from collections import defaultdict
 from dataclasses import dataclass
 from functools import reduce
+from itertools import product
 from typing import Any, List, Iterable, NamedTuple
 
 import portion as P  # type: ignore
@@ -21,6 +24,25 @@ class Rectangle:
     def __post_init__(self):
         assert self.left <= self.right
         assert self.top <= self.bottom
+
+    def __bool__(self) -> bool:
+        return self.left < self.right and self.top < self.bottom
+
+    def __contains__(self, other: Rectangle) -> bool:
+        return (
+            self.left <= other.left
+            and self.top <= other.top
+            and other.right <= self.right
+            and other.bottom <= self.bottom
+        )
+
+    def overlaps(self, other: Rectangle) -> bool:
+        return (
+            self.left < other.right
+            and self.right > other.left
+            and self.top < other.bottom
+            and self.bottom > other.top
+        )
 
     @classmethod
     def from_corner_and_size(cls, x, y, w, h):
@@ -73,7 +95,7 @@ class multimap(defaultdict):
             self[key].append(val)
 
 
-def get_maximal_rectangles(
+def get_maximal_empty_rectangles(
     board: Rectangle,
     defects: List[Rectangle],
     to_visualize=False,
@@ -147,11 +169,11 @@ def get_maximal_rectangles(
     return list(concat(go(hline) for hline in bot_lines))
 
 
-def get_maximal_rectangles_naive(
+def get_maximal_empty_rectangles_naive(
     board: Rectangle, defects: List[Rectangle]
 ) -> List[Rectangle]:
     """Naïve method of generating candidates by enumerating all posibilities."""
-    contains_defect = lambda r: any(r.overlaps(defect, "open") for defect in defects)
+    contains_defect = lambda r: any(r.overlaps(defect) for defect in defects)
     lefts = [defect.right for defect in defects] + [board.left]
     tops = [defect.bottom for defect in defects] + [board.top]
     rights = [defect.left for defect in defects] + [board.right]
@@ -162,4 +184,4 @@ def get_maximal_rectangles_naive(
         if l <= r and t <= b and not contains_defect(Rectangle(l, t, r, b))
     ]
     is_maximal = lambda r: not any(r in q for q in rectangles if q != r)
-    return [r for r in rectangles if r.area() > 0 and is_maximal(r)]
+    return [r for r in rectangles if r and is_maximal(r)]
