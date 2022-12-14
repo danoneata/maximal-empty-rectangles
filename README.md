@@ -41,7 +41,7 @@ defects = [Rectangle.from_corner_and_size(*d) for d in defects]
 mers = get_maximal_empty_rectangles(board, defects)
 ```
 
-Note that the `get_maximal_empty_rectangles` function assumes that the defects are placed in a "board", so it will generate additional MERs that are delimited by the defects and the board limits.
+Note that the `get_maximal_empty_rectangles` function assumes that the defects are placed in an enclosing rectangle (`board`), so it will generate additional MERs that are delimited by the defects and the board limits.
 
 # Explanation of the approach
 
@@ -51,7 +51,7 @@ Our approach is a [sweep line algorithm](https://en.wikipedia.org/wiki/Sweep_lin
 
 The main advantage of this implementation is that it scales quadratically in the number of defects, hence it is much more efficient than a naive approach.
 The naive approach has a complexity of O(n⁵), as it generates all possible rectangles (constructed from edges corresponding to any four defects) and picks only those that are maximal and empty.
-This method is implemented by the `get_maximal_empty_rectangles_naive` function and we use it for testing (to ensure that the both approach yield the same set of MERs).
+This latter method is implemented by the `get_maximal_empty_rectangles_naive` function and we use it primarily for testing (to ensure that the both approach yield the same set of MERs).
 
 As an overview,
 the sweep line search starts from a given horizontal line corresponding to the bottom of a defect (and representing the top of a possible MER)
@@ -72,7 +72,7 @@ The second loop (inner loop) stops at the defects' top lines (`top_lines` in cod
 
 ![](https://gist.githubusercontent.com/danoneata/4c9b72058c8613d28ce2a7aa09f0bf3c/raw/9b4c6c6ad0f6117f7b044e7401864bdf4ddee063/02-top-lines.png)
 
-The corresponding code is, where a `candidate` refers to a maximal empty rectangle:
+The corresponding code is:
 ```python
 def go(hline: float) -> List[Rectangle]:
     state_init = State([], bot_to_defects[hline], P.closed(-P.inf, P.inf))
